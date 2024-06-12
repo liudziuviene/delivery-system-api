@@ -15,6 +15,7 @@ import org.example.deliverysystemapi.repositories.DeliveryAssignmentRepository;
 import org.example.deliverysystemapi.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -132,5 +133,13 @@ public class DeliveryAssignmentService {
 
     public void deleteDeliveryAssignmentById(Long id) {
         deliveryAssignmentRepository.deleteById(id);
+    }
+
+    public List<DeliveryAssignment> filterDeliveryAssignments(Long courierId, Long orderId, LocalDateTime date) {
+        if (courierId == null && orderId == null && date == null) {
+            return deliveryAssignmentRepository.findAll();
+        }
+
+        return deliveryAssignmentRepository.findByCourierIdAndOrderIdAndDate(courierId, orderId, date);
     }
 }

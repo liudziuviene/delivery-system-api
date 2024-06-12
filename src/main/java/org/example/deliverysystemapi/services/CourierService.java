@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.deliverysystemapi.dto.CreateCourierRequest;
 import org.example.deliverysystemapi.dto.UpdateCourierRequest;
 import org.example.deliverysystemapi.entities.Courier;
+import org.example.deliverysystemapi.exceptions.DuplicateCourierException;
 import org.example.deliverysystemapi.repositories.CourierRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -38,7 +41,12 @@ public class CourierService {
             courier.setAddress(createCourierRequest.getAddress());
             courier.setEmail(createCourierRequest.getEmail());
         }
-        return courierRepository.saveAndFlush(courier);
+        try {
+            return courierRepository.saveAndFlush(courier);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Error adding courier: {}", ex.getMessage());
+            throw new DuplicateCourierException("Phone number or email already exists");
+        }
     }
 
     public Courier updateCourier(Long id, UpdateCourierRequest updateCourierRequest) {
@@ -66,11 +74,39 @@ public class CourierService {
         if (updateCourierRequest.getPhoneNo() != null) {
             courier.setPhoneNo(updateCourierRequest.getPhoneNo());
         }
-        return courierRepository.saveAndFlush(courier);
+        try {
+            return courierRepository.saveAndFlush(courier);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Error updating courier: {}", ex.getMessage());
+            throw new DuplicateCourierException("Phone number or email already exists");
+        }
     }
 
     public void deleteCourierById(Long id) {
         courierRepository.deleteById(id);
     }
+
+    public List<Courier> filterCouriers(String name, String surname, String vehicleType) {
+        if (name != null && !name.isEmpty()) {
+            return courierRepository.findByName(name);
+        } else if (surname != null && !surname.isEmpty()) {
+            return courierRepository.findBySurname(surname);
+        } else if (vehicleType != null && !vehicleType.isEmpty()) {
+            return courierRepository.findByVehicleType(vehicleType);
+        } else {
+            return courierRepository.findAll();
+        }
+    }
+
+    public Courier filterCouriersByUniqueFields(String phoneNo, String email) {
+        if (phoneNo != null && !phoneNo.isEmpty()) {
+            return courierRepository.findByPhoneNo(phoneNo);
+        } else if (email != null && !email.isEmpty()) {
+            return courierRepository.findByEmail(email);
+        } else {
+            return null;
+        }
+    }
 }
+
 

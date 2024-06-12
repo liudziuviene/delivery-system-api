@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.deliverysystemapi.converters.CourierConverter;
 import org.example.deliverysystemapi.dto.*;
 import org.example.deliverysystemapi.entities.Courier;
+import org.example.deliverysystemapi.exceptions.BaseErrorResponse;
+import org.example.deliverysystemapi.exceptions.DuplicateCourierException;
 import org.example.deliverysystemapi.exceptions.NotFoundErrorResponse;
 import org.example.deliverysystemapi.exceptions.ValidationErrorResponse;
 import org.example.deliverysystemapi.services.CourierService;
@@ -84,11 +86,17 @@ public class CourierController {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(bindingResult.getFieldErrors()));
         }
 
-        Courier courier = courierService.addCourier(createCourierRequest);
-        ResponseEntity<CreateCourierResponse> response = ResponseEntity.status(HttpStatus.CREATED)
-                .body(CourierConverter.convertCourierToCreateCourierResponse(courier));
-        log.debug(RESPONSE, response);
-        return response;
+        try {
+            Courier courier = courierService.addCourier(createCourierRequest);
+            ResponseEntity<CreateCourierResponse> response = ResponseEntity.status(HttpStatus.CREATED)
+                    .body(CourierConverter.convertCourierToCreateCourierResponse(courier));
+            log.debug(RESPONSE, response);
+            return response;
+        } catch (DuplicateCourierException ex) {
+            log.error("Error adding courier: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new BaseErrorResponse("Duplicate entry", HttpStatus.CONFLICT.value()));
+        }
     }
 
     @PatchMapping("/{id}")
@@ -99,18 +107,24 @@ public class CourierController {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(bindingResult.getFieldErrors()));
         }
 
-        Courier updatedCourier = courierService.updateCourier(id, updateCourierRequest);
-        if (updatedCourier == null) {
-            log.info(NO_COURIER_FOUND, id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new NotFoundErrorResponse("courier", "ID", id.toString()));
-        }
+        try {
+            Courier updatedCourier = courierService.updateCourier(id, updateCourierRequest);
+            if (updatedCourier == null) {
+                log.info(NO_COURIER_FOUND, id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new NotFoundErrorResponse("courier", "ID", id.toString()));
+            }
 
-        log.debug("Updated courier with ID {} with data {}", id, updatedCourier);
-        ResponseEntity<CreateCourierResponse> response = ResponseEntity.status(HttpStatus.OK)
-                .body(CourierConverter.convertCourierToCreateCourierResponse(updatedCourier));
-        log.debug(RESPONSE, response);
-        return response;
+            log.debug("Updated courier with ID {} with data {}", id, updatedCourier);
+            ResponseEntity<CreateCourierResponse> response = ResponseEntity.status(HttpStatus.OK)
+                    .body(CourierConverter.convertCourierToCreateCourierResponse(updatedCourier));
+            log.debug(RESPONSE, response);
+            return response;
+        } catch (DuplicateCourierException ex) {
+            log.error("Error updating courier: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new BaseErrorResponse("Duplicate entry", HttpStatus.CONFLICT.value()));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -127,4 +141,38 @@ public class CourierController {
         log.info("Deleted courier with ID {}", id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterCouriers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String surname,
+            @RequestParam(required = false) String vehicleType,
+            @RequestParam(required = false) String phoneNo,
+            @RequestParam(required = false) String email) {
+        log.debug("Filtering couriers with criteria - name: {}, surname: {}, vehicleType: {}, phoneNo: {}, email: {}",
+                name, surname, vehicleType, phoneNo, email);
+
+        if ((phoneNo != null && !phoneNo.isEmpty()) || (email != null && !email.isEmpty())) {
+            Courier courier = courierService.filterCouriersByUniqueFields(phoneNo, email);
+            if (courier == null) {
+                log.info("No courier found with given unique criteria");
+                return ResponseEntity.noContent().build();
+            }
+            ResponseEntity<CreateCourierResponse> response = ResponseEntity.ok(
+                    CourierConverter.convertCourierToCreateCourierResponse(courier));
+            log.debug(RESPONSE, response);
+            return response;
+        } else {
+            List<Courier> couriers = courierService.filterCouriers(name, surname, vehicleType);
+            if (couriers.isEmpty()) {
+                log.info("No couriers found with given criteria");
+                return ResponseEntity.noContent().build();
+            }
+            ResponseEntity<List<CreateCourierResponse>> response = ResponseEntity.ok(
+                    CourierConverter.convertCouriersToCreateCourierResponses(couriers));
+            log.debug(RESPONSE, response);
+            return response;
+        }
+    }
 }
+

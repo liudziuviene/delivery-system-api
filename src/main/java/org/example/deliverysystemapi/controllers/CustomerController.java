@@ -4,13 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.deliverysystemapi.converters.CustomerConverter;
-import org.example.deliverysystemapi.dto.CreateCustomerRequest;
-import org.example.deliverysystemapi.dto.CreateCustomerResponse;
-import org.example.deliverysystemapi.dto.SimpleCustomerResponse;
-import org.example.deliverysystemapi.dto.UpdateCustomerRequest;
+import org.example.deliverysystemapi.dto.*;
 import org.example.deliverysystemapi.entities.Customer;
-import org.example.deliverysystemapi.exceptions.NotFoundErrorResponse;
-import org.example.deliverysystemapi.exceptions.ValidationErrorResponse;
+import org.example.deliverysystemapi.exceptions.*;
 import org.example.deliverysystemapi.services.CustomerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,11 +81,17 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(bindingResult.getFieldErrors()));
         }
 
-        Customer customer = customerService.addCustomer(createCustomerRequest);
-        ResponseEntity<CreateCustomerResponse> response = ResponseEntity.status(HttpStatus.CREATED)
-                .body(CustomerConverter.convertCustomerToCreateCustomerResponse(customer));
-        log.debug(RESPONSE, response);
-        return response;
+        try {
+            Customer customer = customerService.addCustomer(createCustomerRequest);
+            ResponseEntity<CreateCustomerResponse> response = ResponseEntity.status(HttpStatus.CREATED)
+                    .body(CustomerConverter.convertCustomerToCreateCustomerResponse(customer));
+            log.debug(RESPONSE, response);
+            return response;
+        } catch (DuplicateCustomerException ex) {
+            log.error("Error adding customer: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new BaseErrorResponse("Duplicate entry", HttpStatus.CONFLICT.value()));
+        }
     }
 
     @PatchMapping("/{id}")
@@ -101,18 +103,24 @@ public class CustomerController {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(bindingResult.getFieldErrors()));
         }
 
-        Customer updatedCustomer = customerService.updateCustomer(id, updateCustomerRequest);
-        if (updatedCustomer == null) {
-            log.info(NO_CUSTOMER_FOUND, id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new NotFoundErrorResponse("customer", "ID", id.toString()));
-        }
+        try {
+            Customer updatedCustomer = customerService.updateCustomer(id, updateCustomerRequest);
+            if (updatedCustomer == null) {
+                log.info(NO_CUSTOMER_FOUND, id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new NotFoundErrorResponse("customer", "ID", id.toString()));
+            }
 
-        log.debug("Updated customer with ID {} with data {}", id, updatedCustomer);
-        ResponseEntity<CreateCustomerResponse> response = ResponseEntity.status(HttpStatus.OK)
-                .body(CustomerConverter.convertCustomerToCreateCustomerResponse(updatedCustomer));
-        log.debug(RESPONSE, response);
-        return response;
+            log.debug("Updated customer with ID {} with data {}", id, updatedCustomer);
+            ResponseEntity<CreateCustomerResponse> response = ResponseEntity.status(HttpStatus.OK)
+                    .body(CustomerConverter.convertCustomerToCreateCustomerResponse(updatedCustomer));
+            log.debug(RESPONSE, response);
+            return response;
+        } catch (DuplicateCustomerException ex) {
+            log.error("Error updating customer: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new BaseErrorResponse("Duplicate entry", HttpStatus.CONFLICT.value()));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -127,5 +135,37 @@ public class CustomerController {
         customerService.deleteCustomerById(id);
         log.info("Deleted customer with ID {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterCustomers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String surname,
+            @RequestParam(required = false) String phoneNo,
+            @RequestParam(required = false) String email) {
+        log.debug("Filtering customers with criteria - name: {}, surname: {}, phoneNo: {}, email: {}",
+                name, surname, phoneNo, email);
+
+        if ((phoneNo != null && !phoneNo.isEmpty()) || (email != null && !email.isEmpty())) {
+            Customer customer = customerService.filterCustomersByUniqueFields(phoneNo, email);
+            if (customer == null) {
+                log.info("No customer found with given unique criteria");
+                return ResponseEntity.noContent().build();
+            }
+            ResponseEntity<CreateCustomerResponse> response = ResponseEntity.ok(
+                    CustomerConverter.convertCustomerToCreateCustomerResponse(customer));
+            log.debug(RESPONSE, response);
+            return response;
+        } else {
+            List<Customer> customers = customerService.filterCustomers(name, surname);
+            if (customers.isEmpty()) {
+                log.info("No customers found with given criteria");
+                return ResponseEntity.noContent().build();
+            }
+            ResponseEntity<List<CreateCustomerResponse>> response = ResponseEntity.ok(
+                    CustomerConverter.convertCustomersToCreateCustomerResponses(customers));
+            log.debug(RESPONSE, response);
+            return response;
+        }
     }
 }

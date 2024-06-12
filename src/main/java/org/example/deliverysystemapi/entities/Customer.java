@@ -16,8 +16,10 @@ public class Customer {
     private Long id;
     private String name;
     private String surname;
+    @Column(unique = true)
     private String phoneNo;
     private String address;
+    @Column(unique = true)
     private String email;
 
     @OneToMany(mappedBy = "customer")

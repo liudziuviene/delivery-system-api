@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.deliverysystemapi.dto.CreateCustomerRequest;
 import org.example.deliverysystemapi.dto.UpdateCustomerRequest;
 import org.example.deliverysystemapi.entities.Customer;
+import org.example.deliverysystemapi.exceptions.DuplicateCustomerException;
 import org.example.deliverysystemapi.repositories.CustomerRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -37,7 +40,12 @@ public class CustomerService {
             customer.setAddress(createCustomerRequest.getAddress());
             customer.setEmail(createCustomerRequest.getEmail());
         }
-        return customerRepository.saveAndFlush(customer);
+        try {
+            return customerRepository.saveAndFlush(customer);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Error adding customer: {}", ex.getMessage());
+            throw new DuplicateCustomerException("Phone number or email already exists");
+        }
     }
 
     public Customer updateCustomer(Long id, UpdateCustomerRequest updateCustomerRequest) {
@@ -62,10 +70,35 @@ public class CustomerService {
         if (updateCustomerRequest.getEmail() != null) {
             customer.setEmail(updateCustomerRequest.getEmail());
         }
-        return customerRepository.saveAndFlush(customer);
+        try {
+            return customerRepository.saveAndFlush(customer);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Error updating customer: {}", ex.getMessage());
+            throw new DuplicateCustomerException("Phone number or email already exists");
+        }
     }
 
     public void deleteCustomerById(Long id) {
         customerRepository.deleteById(id);
+    }
+
+    public List<Customer> filterCustomers(String name, String surname) {
+        if (name != null && !name.isEmpty()) {
+            return customerRepository.findByName(name);
+        } else if (surname != null && !surname.isEmpty()) {
+            return customerRepository.findBySurname(surname);
+        } else {
+            return customerRepository.findAll();
+        }
+    }
+
+    public Customer filterCustomersByUniqueFields(String phoneNo, String email) {
+        if (phoneNo != null && !phoneNo.isEmpty()) {
+            return customerRepository.findByPhoneNo(phoneNo);
+        } else if (email != null && !email.isEmpty()) {
+            return customerRepository.findByEmail(email);
+        } else {
+            return null;
+        }
     }
 }
