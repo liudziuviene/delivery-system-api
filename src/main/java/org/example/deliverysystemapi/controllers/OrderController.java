@@ -10,11 +10,13 @@ import org.example.deliverysystemapi.dto.UpdateOrderRequest;
 import org.example.deliverysystemapi.entities.Order;
 import org.example.deliverysystemapi.exceptions.*;
 import org.example.deliverysystemapi.services.OrderService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -146,5 +148,28 @@ public class OrderController {
         orderService.deleteOrderById(id);
         log.info("Deleted order with ID {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterOrders(
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) String pickupAddress,
+            @RequestParam(required = false) String deliveryAddress,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime orderDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime deliveryDate,
+            @RequestParam(required = false) String status) {
+        log.debug("Filtering orders with criteria - customerId: {}, pickupAddress: {}, deliveryAddress: {}, orderDate: {}," +
+                "deliveryDate: {}, status: {}", customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate, status);
+
+        List<Order> orders = orderService.filterOrders(customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate,
+                status);
+        if (orders.isEmpty()) {
+            log.info("No orders found with given criteria");
+            return ResponseEntity.noContent().build();
+        }
+        ResponseEntity<List<CreateOrderResponse>> response = ResponseEntity.ok(
+                OrderConverter.convertOrdersToCreateOrderResponses(orders));
+        log.debug(RESPONSE, response);
+        return response;
     }
 }

@@ -11,6 +11,7 @@ import org.example.deliverysystemapi.repositories.CustomerRepository;
 import org.example.deliverysystemapi.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -91,5 +92,15 @@ public class OrderService {
 
     public void deleteOrderById(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    public List<Order> filterOrders(Long customerId, String pickupAddress, String deliveryAddress, LocalDateTime orderDate,
+                                    LocalDateTime deliveryDate, String status) {
+        if (customerId == null && pickupAddress == null && deliveryAddress == null && orderDate == null && deliveryDate == null && status == null) {
+            return orderRepository.findAll();
+        }
+
+        return orderRepository.findByCustomerIdAndPickupAddressAndDeliveryAddressAndOrderDateAndDeliveryDateAndStatus(
+                customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate, status);
     }
 }

@@ -17,8 +17,10 @@ public class Courier {
     private String name;
     private String surname;
     private String vehicleType;
+    @Column(unique = true)
     private String phoneNo;
     private String address;
+    @Column(unique = true)
     private String email;
 
     @OneToMany(mappedBy = "courier")

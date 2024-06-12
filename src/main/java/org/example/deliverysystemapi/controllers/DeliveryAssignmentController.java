@@ -12,11 +12,13 @@ import org.example.deliverysystemapi.entities.DeliveryAssignment;
 import org.example.deliverysystemapi.entities.Order;
 import org.example.deliverysystemapi.exceptions.*;
 import org.example.deliverysystemapi.services.DeliveryAssignmentService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -203,5 +205,25 @@ public class DeliveryAssignmentController {
         deliveryAssignmentService.deleteDeliveryAssignmentById(id);
         log.info("Deleted delivery assignment with ID {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterDeliveryAssignments(
+            @RequestParam(required = false) Long courierId,
+            @RequestParam(required = false) Long orderId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime date) {
+        log.debug("Filtering delivery assignments with criteria - courierId {}, orderId {}, date {}", courierId, orderId,
+                date);
+
+        List<DeliveryAssignment> deliveryAssignments = deliveryAssignmentService.filterDeliveryAssignments(courierId, orderId,
+                date);
+        if (deliveryAssignments.isEmpty()) {
+            log.info("No delivery assignment found for given criteria");
+            return ResponseEntity.noContent().build();
+        }
+        ResponseEntity<List<CreateDeliveryAssignmentResponse>> response = ResponseEntity.ok(
+                DeliveryAssignmentConverter.convertDeliveryAssignmentsToCreateDeliveryAssignmentResponses(deliveryAssignments));
+        log.debug("Response: {}", response);
+        return response;
     }
 }
