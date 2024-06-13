@@ -10,6 +10,7 @@ import org.example.deliverysystemapi.exceptions.*;
 import org.example.deliverysystemapi.services.CustomerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping
     public ResponseEntity<List<SimpleCustomerResponse>> getAllCustomers() {
         log.debug("Get names and surnames of all customers");
@@ -41,6 +43,7 @@ public class CustomerController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/withDetails")
     public ResponseEntity<List<CreateCustomerResponse>> getAllCustomersWithDetails() {
         log.debug("Get all customers");
@@ -57,6 +60,7 @@ public class CustomerController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getCustomerById(@PathVariable Long id) {
         log.debug("Get customer by ID: {}", id);
@@ -73,6 +77,7 @@ public class CustomerController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<?> addCustomer(@Valid @RequestBody CreateCustomerRequest createCustomerRequest,
                                          BindingResult bindingResult) {
@@ -94,6 +99,7 @@ public class CustomerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@Valid @RequestBody UpdateCustomerRequest updateCustomerRequest,
                                             @PathVariable Long id, BindingResult bindingResult) {
@@ -123,6 +129,7 @@ public class CustomerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
         log.debug("Delete customer by ID: {}", id);
@@ -137,6 +144,7 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/filter")
     public ResponseEntity<?> filterCustomers(
             @RequestParam(required = false) String name,
