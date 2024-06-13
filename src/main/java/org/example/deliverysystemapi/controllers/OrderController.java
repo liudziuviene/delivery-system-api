@@ -13,6 +13,7 @@ import org.example.deliverysystemapi.services.OrderService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping
     public ResponseEntity<List<CreateOrderResponse>> getAllOrders() {
         log.info("Get all orders");
@@ -46,6 +48,7 @@ public class OrderController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
         log.info("Get order by id {}", id);
@@ -63,6 +66,7 @@ public class OrderController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getAllOrdersByCustomerId(@PathVariable Long customerId) {
         log.debug("Get all orders by customer ID: {}", customerId);
@@ -86,6 +90,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<?> addOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest,
                                       BindingResult bindingResult) {
@@ -107,6 +112,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateOrder(@Valid @RequestBody UpdateOrderRequest updateOrderRequest,
                                          @PathVariable Long id, BindingResult bindingResult) {
@@ -135,6 +141,7 @@ public class OrderController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrderById(@PathVariable Long id) {
         log.debug("Delete order by ID {}", id);
@@ -150,6 +157,7 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/filter")
     public ResponseEntity<?> filterOrders(
             @RequestParam(required = false) Long customerId,

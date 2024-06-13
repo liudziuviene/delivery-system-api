@@ -13,6 +13,7 @@ import org.example.deliverysystemapi.exceptions.ValidationErrorResponse;
 import org.example.deliverysystemapi.services.CourierService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,7 @@ public class CourierController {
 
     private final CourierService courierService;
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping
     public ResponseEntity<List<SimpleCourierResponse>> getAllCouriers() {
         log.debug("Getting names and surnames of all couriers");
@@ -44,6 +46,7 @@ public class CourierController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/withDetails")
     public ResponseEntity<List<CreateCourierResponse>> getAllCouriersWithDetails() {
         log.debug("Getting all couriers");
@@ -60,6 +63,7 @@ public class CourierController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getCourierById(@PathVariable Long id) {
         log.debug("Get courier by ID {}", id);
@@ -77,6 +81,7 @@ public class CourierController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<?> addCourier(@Valid @RequestBody CreateCourierRequest createCourierRequest,
                                         BindingResult bindingResult) {
@@ -99,6 +104,7 @@ public class CourierController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateCourier(@Valid @RequestBody UpdateCourierRequest updateCourierRequest,
                                            @PathVariable Long id, BindingResult bindingResult) {
@@ -127,6 +133,7 @@ public class CourierController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourierById(@PathVariable Long id) {
         log.debug("Delete courier by ID {}", id);
@@ -142,6 +149,7 @@ public class CourierController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/filter")
     public ResponseEntity<?> filterCouriers(
             @RequestParam(required = false) String name,

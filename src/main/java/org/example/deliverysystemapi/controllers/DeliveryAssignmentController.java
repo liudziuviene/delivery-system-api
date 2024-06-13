@@ -15,6 +15,7 @@ import org.example.deliverysystemapi.services.DeliveryAssignmentService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,7 @@ public class DeliveryAssignmentController {
 
     private final DeliveryAssignmentService deliveryAssignmentService;
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping
     public ResponseEntity<List<CreateDeliveryAssignmentResponse>> getAllDeliveryAssignments() {
         log.debug("Get all delivery assignments");
@@ -48,6 +50,7 @@ public class DeliveryAssignmentController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getDeliveryAssignmentById(@PathVariable Long id) {
         log.debug("Get delivery assignment by ID: {}", id);
@@ -65,6 +68,7 @@ public class DeliveryAssignmentController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/{id}/courier")
     public ResponseEntity<?> getCourierByDeliveryAssignmentId(@PathVariable Long id) {
         log.debug("Get courier by delivery assignment ID: {}", id);
@@ -82,6 +86,7 @@ public class DeliveryAssignmentController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping("/{id}/order")
     public ResponseEntity<?> getOrderByDeliveryAssignmentId(@PathVariable Long id) {
         log.debug("Get order by delivery assignment ID: {}", id);
@@ -99,6 +104,7 @@ public class DeliveryAssignmentController {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'COURIER')")
     @GetMapping("/courier/{courierId}")
     public ResponseEntity<?> getAllDeliveryAssignmentsByCourierId(@PathVariable Long courierId) {
         log.debug("Get all delivery assignments by courier ID: {}", courierId);
@@ -122,6 +128,7 @@ public class DeliveryAssignmentController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PostMapping
     public ResponseEntity<?> addDeliveryAssignment(@Valid @RequestBody CreateDeliveryAssignmentRequest
                                                            createDeliveryAssignmentRequest, BindingResult bindingResult) {
@@ -153,6 +160,7 @@ public class DeliveryAssignmentController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateDeliveryAssignment(@Valid @RequestBody UpdateDeliveryAssignmentRequest updateDeliveryAssignmentRequest,
                                                       @PathVariable Long id, BindingResult bindingResult) {
@@ -192,6 +200,7 @@ public class DeliveryAssignmentController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDeliveryAssignmentById(@PathVariable Long id) {
         log.debug("Delete delivery assignment {}", id);
@@ -207,6 +216,7 @@ public class DeliveryAssignmentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR')")
     @GetMapping("/filter")
     public ResponseEntity<?> filterDeliveryAssignments(
             @RequestParam(required = false) Long courierId,
