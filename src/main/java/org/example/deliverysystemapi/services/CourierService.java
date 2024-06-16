@@ -9,8 +9,8 @@ import org.example.deliverysystemapi.exceptions.DuplicateCourierException;
 import org.example.deliverysystemapi.repositories.CourierRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -82,6 +82,7 @@ public class CourierService {
         }
     }
 
+    @Transactional
     public void deleteCourierById(Long id) {
         courierRepository.deleteById(id);
     }

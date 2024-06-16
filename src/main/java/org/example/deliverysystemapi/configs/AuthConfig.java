@@ -21,6 +21,7 @@ public class AuthConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
+                                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                                 .requestMatchers("/couriers/**").hasAnyRole("COURIER", "ADMINISTRATOR")
                                 .requestMatchers("/customers/**").hasAnyRole("ADMINISTRATOR", "COURIER")
                                 .requestMatchers("/orders/**").hasAnyRole("ADMINISTRATOR", "COURIER")
