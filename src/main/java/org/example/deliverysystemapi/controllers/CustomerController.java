@@ -154,6 +154,10 @@ public class CustomerController {
         log.debug("Filtering customers with criteria - name: {}, surname: {}, phoneNo: {}, email: {}",
                 name, surname, phoneNo, email);
 
+        if (name == null && surname == null && phoneNo == null && email == null) {
+            log.warn("Error in request");
+            return ResponseEntity.badRequest().body("Error in request");
+        }
         if ((phoneNo != null && !phoneNo.isEmpty()) || (email != null && !email.isEmpty())) {
             Customer customer = customerService.filterCustomersByUniqueFields(phoneNo, email);
             if (customer == null) {

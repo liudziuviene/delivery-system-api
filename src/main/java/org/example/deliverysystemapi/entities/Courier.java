@@ -23,6 +23,6 @@ public class Courier {
     @Column(unique = true)
     private String email;
 
-    @OneToMany(mappedBy = "courier")
+    @OneToMany(mappedBy = "courier", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryAssignment> deliveryAssignments;
 }

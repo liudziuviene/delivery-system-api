@@ -225,6 +225,10 @@ public class DeliveryAssignmentController {
         log.debug("Filtering delivery assignments with criteria - courierId {}, orderId {}, date {}", courierId, orderId,
                 date);
 
+        if (courierId == null && orderId == null && date == null) {
+            log.warn("Error in request");
+            return ResponseEntity.badRequest().body("Error in request");
+        }
         List<DeliveryAssignment> deliveryAssignments = deliveryAssignmentService.filterDeliveryAssignments(courierId, orderId,
                 date);
         if (deliveryAssignments.isEmpty()) {
