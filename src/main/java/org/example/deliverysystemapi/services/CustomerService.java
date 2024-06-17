@@ -10,7 +10,6 @@ import org.example.deliverysystemapi.repositories.CustomerRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -88,7 +87,7 @@ public class CustomerService {
         } else if (surname != null && !surname.isEmpty()) {
             return customerRepository.findBySurname(surname);
         } else {
-            return customerRepository.findAll();
+            return null;
         }
     }
 

@@ -170,7 +170,7 @@ public class CustomerController {
             return response;
         } else {
             List<Customer> customers = customerService.filterCustomers(name, surname);
-            if (customers.isEmpty()) {
+            if (customers == null || customers.isEmpty()) {
                 log.info("No customers found with given criteria");
                 return ResponseEntity.noContent().build();
             }

@@ -97,9 +97,8 @@ public class OrderService {
     public List<Order> filterOrders(Long customerId, String pickupAddress, String deliveryAddress, LocalDateTime orderDate,
                                     LocalDateTime deliveryDate, String status) {
         if (customerId == null && pickupAddress == null && deliveryAddress == null && orderDate == null && deliveryDate == null && status == null) {
-            return orderRepository.findAll();
+            return null;
         }
-
         return orderRepository.findByCustomerIdAndPickupAddressAndDeliveryAddressAndOrderDateAndDeliveryDateAndStatus(
                 customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate, status);
     }

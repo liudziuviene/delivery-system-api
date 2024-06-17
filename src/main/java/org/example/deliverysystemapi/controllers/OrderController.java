@@ -169,13 +169,9 @@ public class OrderController {
         log.debug("Filtering orders with criteria - customerId: {}, pickupAddress: {}, deliveryAddress: {}, orderDate: {}," +
                 "deliveryDate: {}, status: {}", customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate, status);
 
-        if (customerId == null && pickupAddress == null && deliveryAddress == null && orderDate == null && deliveryDate == null && status == null) {
-            log.warn("Error in request");
-            return ResponseEntity.badRequest().body("Error in request");
-        }
         List<Order> orders = orderService.filterOrders(customerId, pickupAddress, deliveryAddress, orderDate, deliveryDate,
                 status);
-        if (orders.isEmpty()) {
+        if (orders == null || orders.isEmpty()) {
             log.info("No orders found with given criteria");
             return ResponseEntity.noContent().build();
         }

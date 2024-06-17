@@ -137,9 +137,8 @@ public class DeliveryAssignmentService {
 
     public List<DeliveryAssignment> filterDeliveryAssignments(Long courierId, Long orderId, LocalDateTime date) {
         if (courierId == null && orderId == null && date == null) {
-            return deliveryAssignmentRepository.findAll();
+            return null;
         }
-
         return deliveryAssignmentRepository.findByCourierIdAndOrderIdAndDate(courierId, orderId, date);
     }
 }

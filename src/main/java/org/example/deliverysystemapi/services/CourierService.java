@@ -95,7 +95,7 @@ public class CourierService {
         } else if (vehicleType != null && !vehicleType.isEmpty()) {
             return courierRepository.findByVehicleType(vehicleType);
         } else {
-            return courierRepository.findAll();
+            return null;
         }
     }
 

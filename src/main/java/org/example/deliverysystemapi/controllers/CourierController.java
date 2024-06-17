@@ -160,10 +160,6 @@ public class CourierController {
         log.debug("Filtering couriers with criteria - name: {}, surname: {}, vehicleType: {}, phoneNo: {}, email: {}",
                 name, surname, vehicleType, phoneNo, email);
 
-        if (name == null && surname == null && vehicleType == null && phoneNo == null && email == null) {
-            log.warn("Error in request");
-            return ResponseEntity.badRequest().body("Error in request");
-        }
         if ((phoneNo != null && !phoneNo.isEmpty()) || (email != null && !email.isEmpty())) {
             Courier courier = courierService.filterCouriersByUniqueFields(phoneNo, email);
             if (courier == null) {
@@ -176,7 +172,7 @@ public class CourierController {
             return response;
         } else {
             List<Courier> couriers = courierService.filterCouriers(name, surname, vehicleType);
-            if (couriers.isEmpty()) {
+            if (couriers == null || couriers.isEmpty()) {
                 log.info("No couriers found with given criteria");
                 return ResponseEntity.noContent().build();
             }
