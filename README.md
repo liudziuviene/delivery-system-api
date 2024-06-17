@@ -1,7 +1,7 @@
 
 ## Delivery System API
 
-The Delivery System API is a Java-based application designed to manage the delivery process involving customers, couriers, and delivery assignments. It provides a RESTful interface for managing these resources, meaning it follows the principles of REST (Representational State Transfer). This ensures that the API is resource-based, uses standard HTTP methods (GET, POST, PATCH, DELETE), and supports stateless interactions.
+The Delivery System API is a Java-based application designed to manage the delivery process involving customers, couriers, orders and delivery assignments. It provides a RESTful interface for managing these resources, meaning it follows the principles of REST (Representational State Transfer). This ensures that the API is resource-based, uses standard HTTP methods (GET, POST, PATCH, DELETE) and supports stateless interactions.
 
 
 
